@@ -263,7 +263,7 @@ h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;le
       var tag = o.tr ? '<span class="tag tr">🔁 между своими: ' + esc(o.tr) + '</span>'
         : o.ignored ? '<span class="tag">не в учёте</span>'
         : o.pending || !o.group ? '<span class="tag wait">' + (o['in'] ? 'откуда пришло?' : 'на что ушло?') + ' скажи боту голосом</span>'
-        : '<span class="tag">' + esc(o.icon || '') + ' ' + esc(o.group) + (o.cat && o.cat !== o.group ? ' · ' + esc(o.cat) : '') + (o.comment ? ' · «' + esc(o.comment) + '»' : '') + '</span>';
+        : '<span class="tag">' + (o.auto ? '≈ ' : '') + esc(o.icon || '') + ' ' + esc(o.group) + (o.cat && o.cat !== o.group ? ' · ' + esc(o.cat) : '') + (o.comment ? ' · «' + esc(o.comment) + '»' : '') + (o.auto ? ' · сам поставил' : '') + '</span>';
       h += '<div class="op" data-i="' + esc(o.id) + '"><div class="r"><div class="dot ' + kind + '">' + (o.tr ? '⇄' : o['in'] ? '+' : '−') + '</div>' +
         '<div class="m"><div class="w">' + esc(o.where || o.head) + '</div><div class="t">' + esc(o.time || '') + ' · ' + esc(o.head.replace(/^[🔴🟢]\s*/u, '')) + ' · ' + esc(o.card) + '</div></div>' +
         '<div class="a"><div class="x num ' + (o['in'] ? 'in' : '') + '">' + (o['in'] ? '+' : '−') + num(o.amount) + '</div>' +
