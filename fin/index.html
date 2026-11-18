@@ -33,6 +33,23 @@ h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;le
 .st{background:var(--card);border-radius:16px;padding:12px 14px}
 .st .k{font-size:12.5px;color:var(--muted)}.st .v{font-size:17px;font-weight:700;margin-top:4px}
 .st.in .v{color:var(--green)}.st.out .v{color:var(--red)}.st .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.ch{background:var(--card);border-radius:18px;margin-top:12px;overflow:hidden}
+.mon{display:flex;justify-content:space-between;align-items:center;padding:10px 6px 2px;font-size:16px;font-weight:600}
+.nav{border:0;background:none;color:var(--fg);font-size:28px;line-height:1;padding:2px 16px 6px}.nav:disabled{opacity:.22}
+.tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;font:inherit;color:var(--muted);padding:9px 6px 8px;text-align:center;border-bottom:3px solid transparent;font-size:12.5px}
+.tab b{display:block;font-size:14.5px;margin-top:2px;font-weight:700;white-space:nowrap}
+.tab.on{color:var(--fg);border-bottom-color:#ff6b5e}
+.pie{display:block;width:100%;height:auto;margin:6px 0 2px}.pie path,.pie circle{stroke:var(--card);stroke-width:1.5}
+.pie .dim{opacity:.35}.pie text{font-family:inherit}
+.grow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line)}
+.grow.sel{background:color-mix(in srgb,var(--muted) 9%,transparent)}
+.pc{flex:0 0 48px;text-align:center;font-size:13px;font-weight:700;color:#1b1f26;border-radius:7px;padding:3px 0}
+.gn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px}
+.gn i{font-style:normal;margin-right:7px}.ga{font-size:14px;font-weight:600}
+.subs{padding:0 14px 10px 72px;font-size:13px;color:var(--muted);background:color-mix(in srgb,var(--muted) 9%,transparent)}
+.subs div{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.chnote{padding:9px 14px 11px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
 .chips{display:flex;gap:8px;overflow-x:auto;margin:0 -14px 10px;padding:0 14px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;border:0;font:inherit;font-size:13.5px;padding:7px 13px;border-radius:999px;background:var(--card);color:var(--fg)}
 .chip.on{background:var(--accent);color:var(--on-accent)}.chip i{font-style:normal;opacity:.7;margin-left:5px}
@@ -149,6 +166,66 @@ h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;le
     });
   }
 
+  var PAL = ['#ff6b5e','#ff9a4d','#ffc93c','#ffe600','#c4e538','#5fd068','#4fd8c4','#5aa9ff','#8f8cff','#c58cff','#ff8ad1','#ffb38a'], GRAY = '#9aa3b1';
+  var cm = null, ctab = 'expense', og = null;
+  function uzs(x){ var p = Math.abs(x).toFixed(2).split('.'); return 'UZS\u00a0' + p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0') + ',' + p[1]; }
+  function color(g, i){ return g.nocat ? GRAY : PAL[i % PAL.length]; }
+  function pie(gs, tot){
+    var cx = 180, r = 72, a0 = -Math.PI / 2, items = [];
+    gs.forEach(function(g, i){
+      var a1 = a0 + g.amount / tot * 2 * Math.PI, mid = (a0 + a1) / 2;
+      items.push({g: g, i: i, a0: a0, a1: a1, mid: mid, right: Math.cos(mid) >= 0, y: (r + 22) * Math.sin(mid)}); a0 = a1;
+    });
+    var L = items.filter(function(x){ return !x.right; }), R = items.filter(function(x){ return x.right; });
+    var GAP = 36, H = Math.max(2 * r + 64, Math.max(L.length, R.length) * GAP + 26), cy = H / 2;
+    [L, R].forEach(function(arr){
+      arr.sort(function(a, b){ return a.y - b.y; });
+      arr.forEach(function(x, k){ x.ly = cy + x.y; if (k && x.ly - arr[k-1].ly < GAP) x.ly = arr[k-1].ly + GAP; });
+      if (!arr.length) return;
+      var over = arr[arr.length-1].ly - (H - 20); if (over > 0) arr.forEach(function(x){ x.ly -= over; });
+      var under = 18 - arr[0].ly; if (under > 0) arr.forEach(function(x){ x.ly += under; });
+    });
+    var s = '<svg class="pie" viewBox="0 0 360 ' + H + '" role="img" aria-label="Доли по категориям">';
+    items.forEach(function(x){
+      var c = color(x.g, x.i), cls = og != null && og !== x.i ? ' class="dim"' : '';
+      if (items.length === 1) s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + c + '" data-g="' + x.i + '"/>';
+      else {
+        var p = function(a){ return (cx + r * Math.cos(a)).toFixed(2) + ' ' + (cy + r * Math.sin(a)).toFixed(2); };
+        s += '<path' + cls + ' data-g="' + x.i + '" fill="' + c + '" d="M' + cx + ' ' + cy + ' L' + p(x.a0) + ' A' + r + ' ' + r + ' 0 ' + (x.a1 - x.a0 > Math.PI ? 1 : 0) + ' 1 ' + p(x.a1) + ' Z"/>';
+      }
+    });
+    items.forEach(function(x){
+      var c = color(x.g, x.i), sx = x.right ? 1 : -1, ex = cx + sx * (r + 16), tx = ex + sx * 11;
+      var x1 = cx + (r + 3) * Math.cos(x.mid), y1 = cy + (r + 3) * Math.sin(x.mid);
+      var name = x.g.name.length > 10 ? x.g.name.slice(0, 9) + '…' : x.g.name, pc = (x.g.amount / tot * 100).toFixed(1).replace('.', ',') + ' %';
+      s += '<polyline fill="none" stroke="' + c + '" stroke-width="1.3" points="' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' ' + ex + ',' + x.ly.toFixed(1) + ' ' + (ex + sx * 8) + ',' + x.ly.toFixed(1) + '"/>' +
+        '<text x="' + tx + '" y="' + (x.ly - 1).toFixed(1) + '" text-anchor="' + (x.right ? 'start' : 'end') + '" style="fill:var(--fg);font-size:12px;font-weight:600">' + esc(name) + '</text>' +
+        '<text x="' + tx + '" y="' + (x.ly + 13).toFixed(1) + '" text-anchor="' + (x.right ? 'start' : 'end') + '" style="fill:var(--muted);font-size:11.5px">' + pc + '</text>';
+    });
+    return s + '</svg>';
+  }
+  function chart(){
+    var ms = D.chart || []; if (!ms.length) return '';
+    if (cm == null || cm >= ms.length) cm = ms.length - 1;
+    var m = ms[cm], sd = m[ctab], gs = sd.groups, tot = sd.total;
+    var h = '<div class="ch"><div class="mon"><button class="nav" data-m="-1"' + (cm === 0 ? ' disabled' : '') + '>‹</button><span>' + esc(m.label) + '</span>' +
+      '<button class="nav" data-m="1"' + (cm === ms.length - 1 ? ' disabled' : '') + '>›</button></div><div class="tabs">' +
+      [['income', 'Доход'], ['expense', 'Расход']].map(function(t){ return '<button class="tab' + (ctab === t[0] ? ' on' : '') + '" data-t="' + t[0] + '">' + t[1] + '<b class="num">' + uzs(m[t[0]].total) + '</b></button>'; }).join('') + '</div>';
+    if (!gs.length) h += '<div class="empty">' + (ctab === 'income' ? 'Поступлений за этот месяц нет' : 'Расходов за этот месяц нет') + '</div>';
+    else {
+      h += pie(gs, tot);
+      gs.forEach(function(g, i){
+        var pc = Math.round(g.amount / tot * 100);
+        h += '<div class="grow' + (og === i ? ' sel' : '') + '" data-g="' + i + '"><span class="pc" style="background:' + color(g, i) + '">' + pc + '%</span>' +
+          '<span class="gn">' + (g.icon ? '<i>' + esc(g.icon) + '</i>' : '') + esc(g.name) + '</span><span class="ga num">' + uzs(g.amount) + '</span></div>';
+        if (og === i) h += '<div class="subs">' + (g.nocat ? '<div><span>' + g.n + ' ' + (g.n === 1 ? 'операция' : g.n < 5 ? 'операции' : 'операций') + ' без категории: скажи боту голосом, ' + (ctab === 'income' ? 'откуда пришло' : 'на что ушло') + '</span></div>'
+          : g.subs.map(function(x){ return '<div><span>' + esc(x.name) + '</span><span class="num">' + uzs(x.amount) + '</span></div>'; }).join('')) + '</div>';
+      });
+    }
+    var oth = (m.other[ctab] || []).map(function(t){ return num(t.amount) + ' ' + esc(t.cur); }).join(', ');
+    h += '<div class="chnote">' + (oth ? 'Отдельно в другой валюте: ' + oth + '. ' : '') + (m.since ? 'Учёт идёт с ' + esc(m.since) + '. ' : '') + 'Переводы между своими картами не считаются.</div></div>';
+    return h;
+  }
   function money(list, cls){
     if (!list || !list.length) return '<span class="num">0</span>';
     return list.map(function(t){ return '<span class="num">' + num(t.amount) + ' ' + CUR(t.cur) + '</span>'; }).join('<br>');
@@ -167,10 +244,7 @@ h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;le
         (a.balance == null ? '<div class="b q">остаток не знаю</div><div class="at">назови его боту голосом</div>'
           : '<div class="b num">' + num(a.balance) + ' ' + CUR(a.cur) + '</div><div class="at">' + (a.at ? 'на ' + stamp(a.at) : '&nbsp;') + '</div>') + '</div>';
     }).join('') + '</div>';
-    var m = d.month;
-    h += '<h2>' + esc(m.label) + (m.since ? ' · с ' + esc(m.since) : '') + '</h2><div class="stats">' +
-      '<div class="st in"><div class="k">Пришло</div><div class="v">' + money(m.income) + '</div><div class="s">без переводов между своими</div></div>' +
-      '<div class="st out"><div class="k">Ушло</div><div class="v">' + money(m.expense) + '</div><div class="s">сегодня ' + num(d.today.expense, false) + ' сум</div></div></div>';
+    h += chart();
     var cnt = {all: d.ops.length, out: 0, 'in': 0, wait: 0};
     d.ops.forEach(function(o){ if (o.pending) cnt.wait++; if (!o.tr) cnt[o['in'] ? 'in' : 'out']++; });
     h += '<h2>Операции</h2><div class="chips">' + [['all','Все'],['out','Расходы'],['in','Поступления'],['wait','Без категории']].map(function(c){
@@ -197,23 +271,16 @@ h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;le
         '<div class="raw">' + esc(o.raw) + '<span class="h">Категорию и комментарий ставишь голосом: ответь на эту операцию в чате бота.</span></div></div>';
     });
     if (day !== null) h += '</div>';
-    if (m.groups.length || m.nocat.count) {
-      var tot = m.groups.reduce(function(s, g){ return s + (g.cur === 'UZS' ? g.amount : 0); }, 0) + m.nocat.amount;
-      h += '<h2>На что ушло · ' + esc(m.label) + '</h2><div class="list">';
-      m.groups.forEach(function(g){
-        h += '<div class="grp"><div class="r"><span>' + esc(g.icon) + ' ' + esc(g.name) + '</span><b class="num">' + num(g.amount, false) + ' ' + CUR(g.cur) + '</b></div>' +
-          (g.cur === 'UZS' && tot ? '<div class="bar"><i style="width:' + Math.max(2, Math.round(g.amount / tot * 100)) + '%"></i></div>' : '') + '</div>';
-      });
-      if (m.nocat.count) h += '<div class="grp"><div class="r"><span>❔ Без категории · ' + m.nocat.count + '</span><b class="num">' + num(m.nocat.amount, false) + ' сум</b></div>' +
-        '<div class="bar"><i class="w" style="width:' + Math.max(2, Math.round(m.nocat.amount / tot * 100)) + '%"></i></div></div>';
-      h += '</div>';
-    }
     h += '<div class="foot">Данные собраны ' + stamp(d.made) + ' по Ташкенту. Uzcard обновляется сам из уведомлений CardXabar, остальные счета — с твоих слов.</div>';
     app.innerHTML = h;
   }
   app.addEventListener('click', function(ev){
     var c = ev.target.closest('.chip'), r = ev.target.closest('#rf'), o = ev.target.closest('.op');
-    if (c) { filter = c.getAttribute('data-f'); render(); }
+    var nv = ev.target.closest('.nav'), tb = ev.target.closest('.tab'), gg = ev.target.closest('[data-g]');
+    if (nv) { if (!nv.disabled) { cm += +nv.getAttribute('data-m'); og = null; render(); } }
+    else if (tb) { ctab = tb.getAttribute('data-t'); og = null; render(); }
+    else if (gg) { var gi = +gg.getAttribute('data-g'); og = og === gi ? null : gi; render(); }
+    else if (c) { filter = c.getAttribute('data-f'); render(); }
     else if (r) refresh(true);
     else if (o) o.classList.toggle('open');
   });
