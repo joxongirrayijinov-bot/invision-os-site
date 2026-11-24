@@ -85,6 +85,7 @@ transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.8,.2,1);pa
 .chip{position:relative;display:inline-block;border-radius:10px;padding:8px 12px;font-size:14px;background:var(--col);white-space:nowrap;overflow:hidden}
 .chip.on{background:var(--accent);color:var(--on-accent)}.chip.x{color:var(--muted)}
 .chip input{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;border:0;margin:0;font-size:16px}
+.adv{background:var(--col);border-radius:12px;padding:11px 12px;margin:6px 0 10px;font-size:14px;line-height:1.4}.adv .ah{font-weight:650;margin-bottom:4px}.adv .an{font-size:12.5px;color:var(--muted);margin-top:6px}.adv .ab{margin-top:8px;color:var(--amber)}.adv .ago{width:100%;margin-top:9px;white-space:normal}
 .meta{font-size:12px;color:var(--muted);padding:12px 0 2px;line-height:1.5}
 .act{display:flex;gap:8px;padding:10px 16px 12px;border-top:1px solid var(--line);flex:none}
 .b{flex:1;border-radius:12px;padding:13px 10px;font-size:15px;font-weight:650;background:var(--col);white-space:nowrap}
@@ -223,6 +224,7 @@ function applyOp(cs,o){
     if(!find(cs,o.id))cs.push({id:o.id,folder:o.folder,col:o.col,title:o.title,note:o.note||'',due:o.due||null,remind:o.remind||null,imp:!!o.imp,by:'Жахонгир',bot:'owner',pos:o.pos,moved:now,created:now,done_at:o.col==='done'?now:null});
     return;
   }
+  if(o.t==='go'){var g=find(cs,o.id);if(g&&!(g.agent&&(g.agent.st==='ask'||g.agent.st==='run')))g.agent={st:'ask'};return;}
   var c=find(cs,o.id), f=o.f||{};
   if(!c){if(f.archived===false&&trash[o.id])cs.push(clone(trash[o.id]));return;}
   if(f.archived===true){cs.splice(cs.indexOf(c),1);return;}
@@ -566,6 +568,17 @@ function impRow(on){return chipRow('Важность',('<button class="chip'+(on
 function rowsHtml(c){return folderRow(c.folder)+colRow(c.col,true)+impRow(!!c.imp)+dueRow(c.due)+remRow(c.remind);}
 function newRows(){return folderRow(NEW.folder)+colRow(NEW.col,false)+impRow(!!NEW.imp)+dueRow(NEW.due);}
 function doneBtn(c){return c.col==='done'?'<button class="b" id="s-done">↩ Вернуть в работу</button>':'<button class="b grn" id="s-done">✅ Готово</button>';}
+function advHtml(c){
+  var a=c.advice,g=c.agent||{};if(!a||c.col==='done')return'';
+  var h='<div class="adv"><div class="ah">🤖 Как решить</div><div class="ap">'+esc(a.plan||'').replace(/\n/g,'<br>')+'</div>';
+  if(a.need)h+='<div class="an">Не хватает: '+esc(a.need)+'</div>';
+  if(a.can&&a.name){
+    if(g.st==='ask'||g.st==='run')h+='<div class="ab">⏳ '+esc(a.icon+' '+a.name)+' работает, результат придёт в чат бота</div>';
+    else h+='<button class="b pri ago" id="s-go">▶ '+(g.st==='done'?'Ещё раз: ':'Отдать: ')+esc(a.icon+' '+a.name)+'</button><div class="an">'+esc(a.do||'')+'</div>';
+  }
+  if(g.st==='done'&&g.text)h+='<div class="an">Последний ответ: '+esc(g.text).replace(/\n/g,'<br>')+'</div>';
+  return h+'</div>';
+}
 function metaHtml(c){
   var a=[];if(c.by)a.push('Поставил: '+esc(c.by));
   if(c.created)a.push('создано '+esc(dnice(c.created))+' '+esc(c.created.slice(11,16)));
@@ -592,7 +605,7 @@ function openSheet(id){
   sheetEl.innerHTML='<div class="bk" data-close="1"></div><div class="sh"><div class="grab"></div><div class="shs">'+
     '<textarea class="ti" id="s-ti" rows="1" placeholder="Что сделать" enterkeyhint="done">'+esc(c.title)+'</textarea>'+
     '<textarea class="no" id="s-no" rows="1" placeholder="Заметка, детали…">'+esc(c.note||'')+'</textarea>'+
-    '<div id="s-rows">'+rowsHtml(c)+'</div><div class="meta" id="s-meta">'+metaHtml(c)+'</div></div>'+
+    '<div id="s-adv">'+advHtml(c)+'</div><div id="s-rows">'+rowsHtml(c)+'</div><div class="meta" id="s-meta">'+metaHtml(c)+'</div></div>'+
     '<div class="act"><span id="s-dw" style="flex:1;display:flex">'+doneBtn(c)+'</span><button class="b sq" id="s-del" aria-label="Удалить">🗑</button><button class="b nar" id="s-x">Закрыть</button></div></div>';
   showSheet();
 }
@@ -651,6 +664,7 @@ function onSheetClick(e){
   if(el.closest('[data-close]')||el.closest('#s-x')||el.closest('#n-x'))return closeSheet();
   if(el.closest('#n-add'))return addNew();
   if(el.closest('#s-done')){var c=find(C,openId);if(!c)return;if(c.col==='done'){var back=c.prev_col&&c.prev_col!=='done'?c.prev_col:'todo';setField('col',back);}else{setField('col','done');closeSheet();toast('Готово ✓');}return;}
+  if(el.closest('#s-go')){var ag=find(C,openId);if(!ag)return;hap('ok');push({t:'go',id:ag.id});render();sync();$('s-adv').innerHTML=advHtml(ag);toast('Отдал агенту — ответ придёт в чат бота');return;}
   if(el.closest('#s-del')){
     var d=find(C,openId);if(!d)return;var id=d.id;trash[id]=clone(d);hap('warn');
     closeSheet();queue({t:'set',id:id,f:{archived:true}});
