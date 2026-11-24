@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="robots" content="noindex, nofollow"><title>Jaxongir Ruhiyat</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{color-scheme:dark;--page:var(--tg-theme-secondary-bg-color,#0e1116);--card:var(--tg-theme-section-bg-color,var(--tg-theme-bg-color,#171c24));
+--fg:var(--tg-theme-text-color,#e9edf3);--muted:var(--tg-theme-hint-color,#8b96a6);--accent:var(--tg-theme-button-color,#3b82f6);--on-accent:var(--tg-theme-button-text-color,#fff);
+--line:color-mix(in srgb,var(--muted) 22%,transparent);--red:#f0616d;--green:#31c48d;--amber:#f5a524;--blue:#5b9dff}
+:root.light{color-scheme:light;--page:var(--tg-theme-secondary-bg-color,#f1f3f6);--card:var(--tg-theme-section-bg-color,var(--tg-theme-bg-color,#fff));
+--fg:var(--tg-theme-text-color,#131820);--muted:var(--tg-theme-hint-color,#6b7686);--red:#d63c4a;--green:#12996a;--amber:#b87400;--blue:#2563eb}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}body{background:var(--page);color:var(--fg);font:15px/1.4 -apple-system,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
+padding:12px 14px calc(28px + env(safe-area-inset-bottom,0px));-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}.dec{opacity:.6;font-size:.72em}
+.hero{border-radius:22px;padding:18px 18px 16px;color:#fff;background:linear-gradient(135deg,#1d3fae 0%,#2563eb 46%,#0e9aa7 100%);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-60px;top:-70px;width:210px;height:210px;border-radius:50%;background:rgba(255,255,255,.09)}
+.hero .lbl{font-size:13px;opacity:.85;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+.hero .sum{font-size:34px;font-weight:750;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.1}
+.hero .sum small{font-size:16px;font-weight:600;opacity:.85;margin-left:6px}
+.hero .upd{font-size:12px;opacity:.8}
+.rf{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;font:inherit;font-size:12px;padding:5px 11px}
+.rf.spin{opacity:.6}
+h2{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:20px 4px 8px}
+.accs{display:flex;gap:10px;overflow-x:auto;margin:12px -14px 0;padding:0 14px 2px;scrollbar-width:none}.accs::-webkit-scrollbar{display:none}
+.acc{flex:0 0 auto;min-width:158px;background:var(--card);border-radius:16px;padding:12px 14px}
+.acc .n{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.acc .n b{color:var(--accent);font-weight:600;font-size:11px}
+.acc .l4{font-size:12px;color:var(--muted);letter-spacing:.08em;margin-top:1px}
+.acc .b{font-size:17px;font-weight:700;margin-top:8px}.acc .b.q{font-size:13px;font-weight:500;color:var(--muted)}
+.acc .at{font-size:11px;color:var(--muted);margin-top:1px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.st{background:var(--card);border-radius:16px;padding:12px 14px}
+.st .k{font-size:12.5px;color:var(--muted)}.st .v{font-size:17px;font-weight:700;margin-top:4px}
+.st.in .v{color:var(--green)}.st.out .v{color:var(--red)}.st .s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.ch{background:var(--card);border-radius:18px;margin-top:12px;overflow:hidden}
+.mon{display:flex;justify-content:space-between;align-items:center;padding:10px 6px 2px;font-size:16px;font-weight:600}
+.nav{border:0;background:none;color:var(--fg);font-size:28px;line-height:1;padding:2px 16px 6px}.nav:disabled{opacity:.22}
+.tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;font:inherit;color:var(--muted);padding:9px 6px 8px;text-align:center;border-bottom:3px solid transparent;font-size:12.5px}
+.tab b{display:block;font-size:14.5px;margin-top:2px;font-weight:700;white-space:nowrap}
+.tab.on{color:var(--fg);border-bottom-color:#ff6b5e}
+.pie{display:block;width:100%;height:auto;margin:6px 0 2px}.pie path,.pie circle{stroke:var(--card);stroke-width:1.5}
+.pie .dim{opacity:.35}.pie text{font-family:inherit}
+.grow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--line)}
+.grow.sel{background:color-mix(in srgb,var(--muted) 9%,transparent)}
+.pc{flex:0 0 48px;text-align:center;font-size:13px;font-weight:700;color:#1b1f26;border-radius:7px;padding:3px 0}
+.gn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px}
+.gn i{font-style:normal;margin-right:7px}.ga{font-size:14px;font-weight:600}
+.subs{padding:0 14px 10px 72px;font-size:13px;color:var(--muted);background:color-mix(in srgb,var(--muted) 9%,transparent)}
+.subs div{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.chnote{padding:9px 14px 11px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -14px 10px;padding:0 14px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:0;font:inherit;font-size:13.5px;padding:7px 13px;border-radius:999px;background:var(--card);color:var(--fg)}
+.chip.on{background:var(--accent);color:var(--on-accent)}.chip i{font-style:normal;opacity:.7;margin-left:5px}
+.day{font-size:12.5px;color:var(--muted);margin:14px 4px 6px;display:flex;justify-content:space-between}
+.list{background:var(--card);border-radius:16px;overflow:hidden}
+.op{padding:11px 14px;border-top:1px solid var(--line)}.op:first-child{border-top:0}
+.op .r{display:flex;gap:11px;align-items:flex-start}
+.dot{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:700;margin-top:1px}
+.dot.out{background:color-mix(in srgb,var(--red) 16%,transparent);color:var(--red)}
+.dot.in{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.dot.tr{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue)}
+.op .m{flex:1;min-width:0}.op .w{font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op .t{font-size:12px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op .a{text-align:right;flex:0 0 auto}.op .a .x{font-weight:700;font-size:15px}.op .a .x.in{color:var(--green)}
+.op .a .bl{font-size:11.5px;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;margin:7px 0 0 45px;font-size:12px;padding:3px 9px;border-radius:8px;background:color-mix(in srgb,var(--muted) 14%,transparent);color:var(--fg);max-width:calc(100% - 45px)}
+.tag.wait{background:color-mix(in srgb,var(--amber) 18%,transparent);color:var(--amber)}
+.tag.tr{background:color-mix(in srgb,var(--blue) 15%,transparent);color:var(--blue)}
+.raw{display:none;margin:10px 0 2px 45px;padding:10px 12px;border-radius:12px;background:var(--page);font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+.raw .h{display:block;margin-top:8px;font-size:12px;color:var(--muted)}
+.op.open .raw{display:block}
+.grp{padding:10px 14px;border-top:1px solid var(--line)}.grp:first-child{border-top:0}
+.grp .r{display:flex;justify-content:space-between;gap:10px;font-size:14px}.grp .r b{font-weight:600}
+.bar{height:5px;border-radius:3px;background:color-mix(in srgb,var(--muted) 16%,transparent);margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}.bar i.w{background:var(--amber)}
+.empty{padding:22px 14px;text-align:center;color:var(--muted);font-size:13.5px}
+.foot{margin:18px 4px 0;font-size:12px;color:var(--muted);line-height:1.5}
+.gate{min-height:86vh;display:grid;place-items:center}
+.box{width:min(360px,100%);background:var(--card);border-radius:20px;padding:24px 20px;display:flex;flex-direction:column;gap:13px}
+.box .ic{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#2563eb,#0e9aa7);display:grid;place-items:center;font-size:22px}
+.box h1{margin:0;font-size:19px}.box p{margin:0;color:var(--muted);font-size:13.5px}
+.box input{width:100%;font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--page);color:var(--fg)}
+.box button{font:inherit;font-weight:700;padding:12px;border-radius:12px;border:0;background:var(--accent);color:var(--on-accent)}
+.box button:disabled{opacity:.6}.err{color:var(--red);font-size:13px;min-height:1.2em}
+</style></head><body>
+<div id="app"><div class="empty">Открываю…</div></div>
+<script>
+(function(){
+  var SALT='s54V3CAVsp5l/+p/GyYCeg==', ITER=300000, KEY='os.key';
+  var tg = (window.Telegram && Telegram.WebApp) || null, app = document.getElementById('app'), D = null, filter = 'all', key = null;
+  function theme(){
+    var light = tg && tg.colorScheme ? tg.colorScheme === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches;
+    document.documentElement.classList.toggle('light', light);
+  }
+  theme();
+  if (tg) { try { tg.ready(); tg.expand(); tg.onEvent('themeChanged', theme); } catch(e){} }
+  var b64 = function(s){ var b = atob(s), a = new Uint8Array(b.length); for (var i=0;i<b.length;i++) a[i]=b.charCodeAt(i); return a; };
+  var toB64 = function(a){ var s=''; a=new Uint8Array(a); for (var i=0;i<a.length;i++) s+=String.fromCharCode(a[i]); return btoa(s); };
+  var esc = function(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  var CUR = function(c){ return c === 'UZS' ? 'сум' : c; };
+  function num(x, dec){
+    var neg = x < 0, p = Math.abs(x).toFixed(2).split('.'), i = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return (neg ? '−' : '') + i + (dec === false ? '' : '<span class="dec">.' + p[1] + '</span>');
+  }
+  var MON = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  function dayLabel(d){
+    var t = new Date(Date.now() + 5*3600e3).toISOString().slice(0,10), y = new Date(Date.now() + 5*3600e3 - 864e5).toISOString().slice(0,10);
+    return d === t ? 'Сегодня' : d === y ? 'Вчера' : (+d.slice(8,10)) + ' ' + MON[+d.slice(5,7)-1];
+  }
+  function stamp(s){ return s ? s.slice(8,10) + '.' + s.slice(5,7) + ' ' + s.slice(11,16) : ''; }
+
+  // ---------- ключ: один раз пароль, дальше хранится в телефоне
+  function storedKey(){
+    return new Promise(function(res){
+      var raw = null; try { raw = localStorage.getItem(KEY); } catch(e){}
+      if (raw) return res(raw);
+      try {
+        if (tg && tg.DeviceStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('9.0')) {
+          var done = false; setTimeout(function(){ if (!done) { done = true; res(null); } }, 1500);
+          tg.DeviceStorage.getItem('os_key', function(err, v){ if (!done) { done = true; res(err ? null : (v || null)); } });
+          return;
+        }
+      } catch(e){}
+      res(null);
+    });
+  }
+  function keepKey(raw){
+    try { localStorage.setItem(KEY, raw); } catch(e){}
+    try { if (tg && tg.DeviceStorage && tg.isVersionAtLeast('9.0')) tg.DeviceStorage.setItem('os_key', raw, function(){}); } catch(e){}
+  }
+  function dropKey(){
+    try { localStorage.removeItem(KEY); } catch(e){}
+    try { if (tg && tg.DeviceStorage && tg.isVersionAtLeast('9.0')) tg.DeviceStorage.removeItem('os_key', function(){}); } catch(e){}
+  }
+  async function keyFromPassword(p){
+    var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(p), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2', salt:b64(SALT), iterations:ITER, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, true, ['decrypt']);
+  }
+  async function fetchData(k){
+    var r = await fetch('data.json?t=' + Date.now(), {cache:'no-store'});
+    if (!r.ok) throw new Error('net');
+    var p = await r.json(), plain;
+    try { plain = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(p.iv)}, k, b64(p.ct)); } catch(e) { throw new Error('key'); }
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+
+  function gate(msg){
+    app.innerHTML = '<div class="gate"><form class="box" id="f"><div class="ic">🌙</div><h1>Jaxongir Ruhiyat</h1>' +
+      '<p>Введи пароль от страницы OS. Он нужен один раз на этом телефоне, дальше приложение открывается сразу.</p>' +
+      '<input type="password" id="pw" autocomplete="current-password" placeholder="Пароль"><button id="go" type="submit">Открыть</button>' +
+      '<div class="err" id="err">' + esc(msg || '') + '</div></form></div>';
+    var f = document.getElementById('f'), pw = document.getElementById('pw'), go = document.getElementById('go'), err = document.getElementById('err');
+    f.addEventListener('submit', async function(ev){
+      ev.preventDefault(); err.textContent = ''; go.disabled = true; go.textContent = 'Проверяю…';
+      try {
+        var k = await keyFromPassword(pw.value);
+        D = await fetchData(k); key = k;
+        keepKey(toB64(await crypto.subtle.exportKey('raw', k)));
+        render();
+      } catch(e) {
+        err.textContent = e.message === 'key' ? 'Пароль не подошёл.' : 'Нет связи, попробуй ещё раз.';
+        go.disabled = false; go.textContent = 'Открыть';
+      }
+    });
+  }
+
+
+  function card(h){ return '<div class="ch" style="padding:12px 14px;margin-top:10px">' + h + '</div>'; }
+  function list(a){ return a && a.length ? a.map(function(x){ return '<div style="padding:4px 0;border-top:1px solid var(--line)">' + esc(x) + '</div>'; }).join('') : '<div class="empty" style="padding:8px">пока пусто</div>'; }
+  function more(title, a){ return a && a.length ? '<details><summary style="font-size:14px"><b>' + esc(title) + '</b> · ' + a.length + '</summary>' + list(a) + '</details>' : ''; }
+  var SYM = {ok:'✅', miss:'❌'};
+  function render(){
+    var N = D.namaz;
+    var h = '<div class="hero"><div class="lbl"><span>Jaxongir Ruhiyat · AI OS</span><span>' + esc(D.made.slice(8,10)+'.'+D.made.slice(5,7)+' '+D.made.slice(11)) + '</span></div>' +
+      '<div class="sum">Намаз за 7 дней: ' + N.ok + ' / ' + N.total + '</div><div class="upd">' + D.agents.length + ' агента: ' + esc(D.agents.map(function(a){ return a.ic + ' ' + a.name; }).join(' · ')) + '</div></div>';
+    h += '<h2>Намаз сегодня</h2>' + card(N.today.map(function(p){ return '<div style="display:flex;justify-content:space-between;padding:4px 0"><span>' + esc(p.n) + ' <span style="color:var(--muted)">' + esc(p.t) + '</span></span><span>' + (SYM[p.m] || '·') + '</span></div>'; }).join(''));
+    h += card('<div style="font-size:12px;color:var(--muted)">Неделя: Bomdod · Peshin · Asr · Shom · Xufton</div>' + N.week.map(function(d){ return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid var(--line)"><span>' + esc(d.d) + '</span><span>' + d.m.map(function(x){ return SYM[x] || '·'; }).join(' ') + '</span></div>'; }).join(''));
+    h += '<h2>Какие AI работают</h2>';
+    D.agents.forEach(function(a){
+      h += card('<div style="display:flex;gap:10px;align-items:center"><div style="font-size:26px">' + a.ic + '</div><div style="flex:1"><b style="font-size:16px">' + esc(a.name) +
+        '</b> <span style="color:var(--green);font-size:12px">● работает</span><div style="color:var(--muted);font-size:13px">' + esc(a.zone) + '</div>' + (a.mode ? '<div style="font-size:12px;margin-top:2px">⏱ ' + esc(a.mode) + '</div>' : '') + '</div></div>' +
+        '<div style="color:var(--muted);font-size:12px;margin-top:6px">Папка: ' + esc(a.files.join(' · ')) + (a.upd ? ' · обновлено ' + esc(a.upd) : '') + '</div>');
+    });
+    h += '<h2>Устав: что я делаю</h2>' + card(list(D.ustav));
+    h += '<h2>Мои выводы и инсайты</h2>' + card(list(D.insights));
+    h += '<h2>Духовный паспорт</h2>' + card(more('Вера и цели', D.passport) + more('Новое из бота', D.added) + more('Суперсила', D.power));
+    h += '<h2>Идеальный день и привычки</h2>' + card(list(D.ideal));
+    if (D.rules.length) h += '<h2>Мои правки боту</h2>' + card(list(D.rules));
+    h += '<div class="foot">Только просмотр. Меняется голосом в чате бота.</div>';
+    app.innerHTML = h;
+  }
+  async function refresh(){ try { if (key) { D = await fetchData(key); render(); } } catch(e){} }
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) refresh(false); });
+  setInterval(function(){ if (!document.hidden) refresh(false); }, 30000);
+
+  (async function start(){
+    var raw = await storedKey();
+    if (!raw) return gate();
+    try {
+      var k = await crypto.subtle.importKey('raw', b64(raw), {name:'AES-GCM'}, false, ['decrypt']);
+      D = await fetchData(k); key = k; render();
+    } catch(e) {
+      if (e.message === 'key') { dropKey(); gate(); }
+      else app.innerHTML = '<div class="empty">Нет связи. Закрой и открой приложение ещё раз.</div>';
+    }
+  })();
+})();
+</script></body></html>
