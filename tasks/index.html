@@ -63,6 +63,10 @@ scroll-snap-type:x mandatory;scroll-padding:0 14px;-webkit-overflow-scrolling:to
 .card.ph .cin>*{visibility:hidden}.card.ph .cin::before{display:none}
 .card.drag-clone{z-index:1000;pointer-events:none;opacity:1!important}
 .card.drag-clone .cin{background:var(--card);transform:rotate(2deg) scale(1.03);box-shadow:0 16px 36px rgba(0,0,0,.4)}
+.grp{display:flex;align-items:center;gap:9px;padding:8px 8px 8px 6px;cursor:pointer;border-radius:9px;font-size:14.5px}.grp:active{background:var(--line)}
+.grp i{flex:none;width:18px;text-align:center;font-style:normal;font-size:20px;line-height:18px;color:var(--fg);transition:transform .15s}.grp.on i{transform:rotate(90deg)}
+.grp .gn{font-weight:650}.grp .gc{color:var(--muted);font-size:13px}.card.kid{margin-left:22px}
+.lst .grp{font-size:16px;gap:12px;padding:12px 2px 12px 0;border-radius:0;border-bottom:1px solid var(--line)}.lst .grp i{width:16px}
 .card.new .cin{animation:pop .45s ease}
 @keyframes pop{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.02)}100%{transform:none;opacity:1}}
 .fab{position:fixed;right:16px;bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--on-accent);
@@ -167,7 +171,7 @@ var $=function(id){return document.getElementById(id);};
 var app=$('app'), sheetEl=$('sheet'), toastEl=$('toast');
 var FC={blog:'var(--blog)',inv:'var(--inv)',me:'var(--me)'};
 var ORDER=['inbox','todo','doing','wait','done'];
-var VKEY='tasks.view', DKEY='tasks.done', VIEW=ls(VKEY)==='board'?'board':'list', DSHUT=ls(DKEY)!=='0', editing=false;  // вид: список по умолчанию; «Готово» свёрнуто
+var VKEY='tasks.view', DKEY='tasks.done', VIEW=ls(VKEY)==='board'?'board':'list', DSHUT=ls(DKEY)!=='0', editing=false, GKEY='tasks.groups', GOPEN={};try{GOPEN=JSON.parse(ls(GKEY)||'{}')||{};}catch(e){GOPEN={};}  // вид: список по умолчанию; «Готово» свёрнуто
 var MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'], WD=['вс','пн','вт','ср','чт','пт','сб'];
 var key=null, D=null, S={rev:-1,cards:[]}, C=[], Q=[], inflight=0, API=null, live=null, busy=false, skew=0, failN=0, logs=[], trash={};
 var TAB='all', FILTER=null, SEARCH='', dragging=false, pressing=false, needRender=false, sortables=[], openId=null, NEW=null;
@@ -354,6 +358,8 @@ function mount(){
     var add=e.target.closest('[data-add]');if(add)return openNew(add.getAttribute('data-add'));
     var hd=e.target.closest('.col>header');
     if(hd){if(VIEW==='list'&&hd.parentNode.getAttribute('data-col')==='done'){DSHUT=!DSHUT;ls(DKEY,DSHUT?'1':'0');render();}return;}
+    var gr=e.target.closest('.grp');
+    if(gr){var gk=gr.getAttribute('data-g');if(!SEARCH&&!FILTER){GOPEN[gk]=GOPEN[gk]?0:1;ls(GKEY,JSON.stringify(GOPEN));hap('sel');render();}return;}
     var card=e.target.closest('.card');if(!card)return;
     var id=card.getAttribute('data-id');
     if(e.target.closest('.chk'))return toggleDone(id);
@@ -422,12 +428,31 @@ function render(){
     '<button class="fl'+(FILTER==='ag'?' on':'')+'" data-f="ag"><b>'+ag+'</b>от агентов</button>';
   renderBoard();renderConn();
 }
+// группа клиента (25.11.2026): одна строка, нажал — под ней раскрылись задачи; во время поиска и фильтра раскрыта всегда
+function groupOf(c){var t=String(c.title||'').toLowerCase(),g=D.groups||{};for(var k in g){try{if(new RegExp(g[k][1]).test(t))return k;}catch(e){}}return null;}
+function cardsHtml(cs){
+  var by={},h='',seen={},t=tday(0);
+  cs.forEach(function(c){var k=groupOf(c);if(k)(by[k]=by[k]||[]).push(c);});
+  cs.forEach(function(c){
+    var k=groupOf(c);
+    if(!k||by[k].length<2){h+=cardHtml(c);return;}
+    if(seen[k])return;seen[k]=1;
+    var g=by[k], open=!!GOPEN[k]||!!SEARCH||!!FILTER, m=[];
+    var fire=g.filter(function(x){return x.imp;}).length, ov=g.filter(function(x){return x.due&&x.due<t;}).length, td=g.filter(function(x){return x.due===t;}).length;
+    if(fire)m.push('🔥'+fire);
+    if(ov)m.push('<span class="red">просрочено '+ov+'</span>');
+    if(td)m.push('<span class="amb">сегодня '+td+'</span>');
+    h+='<div class="grp'+(open?' on':'')+'" data-g="'+esc(k)+'" data-last="'+esc(g[g.length-1].id)+'" role="button" aria-expanded="'+open+'"><i>›</i><span class="gn">'+esc(D.groups[k][0])+'</span><span class="gc">'+g.length+'</span>'+(m.length?'<span class="cm">'+m.join(' ')+'</span>':'')+'</div>';
+    if(open)h+=g.map(function(x){return cardHtml(x).replace('class="card','class="card kid');}).join('');
+  });
+  return h;
+}
 function secHtml(col,title,cs,isImp,shut,grp){
   var L=VIEW==='list', dc=isImp?'':col, attr=(isImp?' data-imp="1"':'')+(grp?' data-grp="1"':'');
   var side=L?(col==='done'?'<span class="chev">'+(shut?'▸':'▾')+'</span>':''):(col!=='done'?'<button class="cadd" data-add="'+col+'" aria-label="Добавить в «'+esc(shortCol(col))+'»">＋</button>':'');
   var ttl=L&&!isImp?String(title).replace(/^(?![\wА-Яа-яЁё])\S+\s/,''):title;
   return '<section class="col'+(shut?' shut':'')+'" data-col="'+dc+'"'+attr+'><header><span>'+esc(ttl)+'</span><span class="cc">'+cs.length+'</span>'+side+
-    '</header><div class="list" data-col="'+dc+'"'+attr+'>'+cs.map(cardHtml).join('')+'</div></section>';
+    '</header><div class="list" data-col="'+dc+'"'+attr+'>'+(col==='done'?cs.map(cardHtml).join(''):cardsHtml(cs))+'</div></section>';
 }
 function renderBoard(){
   var bd=$('board'), keepX=bd.scrollLeft, keepY={}, L=VIEW==='list';
@@ -439,7 +464,7 @@ function renderBoard(){
     var rank=function(c){return(c.imp?0:2)+(c.col==='doing'?0:1);};
     var open=v.filter(function(c){return c.col!=='done';}).sort(function(a,b){return(rank(a)-rank(b))||((a.pos||0)-(b.pos||0));});
     var dn=v.filter(function(c){return c.col==='done';}).sort(function(a,b){return(b.done_at||'')<(a.done_at||'')?-1:1;});
-    h+='<section class="col one"><div class="list" data-col="todo" data-grp="1">'+open.map(cardHtml).join('')+'</div></section>';
+    h+='<section class="col one"><div class="list" data-col="todo" data-grp="1">'+cardsHtml(open)+'</div></section>';
     if(dn.length)h+=secHtml('done','Готово',dn,false,DSHUT,false);
   }else{
     ORDER.forEach(function(col){
@@ -518,7 +543,8 @@ function onDrop(e){
     if(to!==from)f.col=to;
     if(to!=='done'){
       var pv=e.item.previousElementSibling, nx=e.item.nextElementSibling;
-      var pp=pv&&pv.classList.contains('card')?find(C,pv.getAttribute('data-id')):null, np=nx&&nx.classList.contains('card')?find(C,nx.getAttribute('data-id')):null;
+      var cg=pv&&pv.classList.contains('grp')&&!pv.classList.contains('on')?find(C,pv.getAttribute('data-last')):null;  // встала под свёрнутой группой — после её последней
+      var pp=cg||(pv&&pv.classList.contains('card'))?cg||find(C,pv.getAttribute('data-id')):null, np=nx&&nx.classList.contains('card')?find(C,nx.getAttribute('data-id')):null;
       f.pos=pp&&np?((pp.pos||0)+(np.pos||0))/2:pp?(pp.pos||0)+1024:np?(np.pos||0)-1024:0;
       var impNow=pp?!!pp.imp:(np?!!np.imp:false);  // встала среди важных — важная; среди обычных — обычная
       if(!!dc.imp!==impNow)f.imp=impNow;
