@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Джарвис: проверка микрофона</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#0b1120;--tx:#eaf0ff;--mu:#93a4c8;--ac:#38d6b5;--ac2:#7aa7ff;--rd:#ff7a8a}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;background:radial-gradient(700px 500px at 50% 25%,#18285a 0,transparent 70%),var(--bg);color:var(--tx);font:16px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;padding:28px 18px;text-align:center}
+h1{font-size:24px}.sub{color:var(--mu);margin:6px 0 30px;font-size:14px}
+#orb{width:180px;height:180px;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,var(--ac2),var(--ac) 55%,#0e5a4c);color:#06231d;font-size:20px;font-weight:800;box-shadow:0 0 60px #38d6b555;transition:transform .08s}
+#orb:disabled{opacity:.85}
+#state{margin:26px 0 14px;font-size:18px;font-weight:600;min-height:28px}
+ul{list-style:none;padding:0;width:100%;max-width:420px;text-align:left}
+li{background:#141f3a;border:1px solid #26375f;border-radius:14px;padding:11px 14px;margin:8px 0;font-size:15px}
+li small{display:block;color:var(--mu);font-size:12.5px}
+audio{width:100%;max-width:420px;margin-top:8px}
+.alt{margin-top:14px;background:transparent;color:var(--ac2);border:1px solid var(--ac2);border-radius:12px;padding:10px 16px;font-size:14px}
+</style>
+</head>
+<body>
+<h1>Джарвис</h1>
+<div class="sub">Шаг 1: проверяем, слышит ли телефон тебя внутри Telegram</div>
+<button id="orb">Нажми<br>и говори</button>
+<div id="state"></div>
+<ul id="log"></ul>
+<audio id="play" controls hidden></audio>
+<button class="alt" id="safari">Открыть в Safari</button>
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const $ = (id) => document.getElementById(id);
+const log = (ok, title, note) => {
+  const li = document.createElement('li');
+  li.textContent = (ok ? '✅ ' : '❌ ') + title;
+  if (note) { const s = document.createElement('small'); s.textContent = note; li.appendChild(s); }
+  $('log').appendChild(li);
+};
+$('safari').onclick = () => { if (tg && tg.openLink) tg.openLink(location.href); else window.open(location.href, '_blank'); };
+
+$('orb').onclick = async () => {
+  const orb = $('orb');
+  orb.disabled = true; $('log').innerHTML = ''; $('play').hidden = true;
+  // iPhone разрешает звук только после касания: «будим» голос сразу
+  try { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } catch (e) {}
+  let ctx = null;
+  try { ctx = new (window.AudioContext || window.webkitAudioContext)(); ctx.resume(); } catch (e) {}
+  let stream;
+  try {
+    $('state').textContent = 'Прошу доступ к микрофону…';
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    log(true, 'Микрофон открылся');
+  } catch (e) {
+    log(false, 'Микрофон не открылся', (e.name || '') + ': ' + (e.message || e));
+    $('state').textContent = 'Нажми «Открыть в Safari» и попробуй там';
+    orb.disabled = false; return;
+  }
+  let peak = 0, raf = 0;
+  if (ctx) {
+    const an = ctx.createAnalyser(); an.fftSize = 1024;
+    ctx.createMediaStreamSource(stream).connect(an);
+    const buf = new Uint8Array(an.fftSize);
+    const tick = () => {
+      an.getByteTimeDomainData(buf);
+      let m = 0; for (const v of buf) m = Math.max(m, Math.abs(v - 128));
+      peak = Math.max(peak, m);
+      orb.style.transform = 'scale(' + (1 + Math.min(m, 60) / 220) + ')';
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+  const chunks = [];
+  let rec;
+  try {
+    rec = new MediaRecorder(stream);
+  } catch (e) {
+    log(false, 'Запись не поддерживается', e.message);
+    stream.getTracks().forEach(t => t.stop()); orb.disabled = false; return;
+  }
+  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    cancelAnimationFrame(raf); orb.style.transform = '';
+    stream.getTracks().forEach(t => t.stop());
+    const blob = new Blob(chunks, { type: rec.mimeType });
+    log(blob.size > 1000, 'Запись: ' + Math.round(blob.size / 1024) + ' КБ', rec.mimeType);
+    if (ctx) log(peak > 6, peak > 6 ? 'Твой голос слышен' : 'Тишина: голос не слышен', 'громкость ' + peak);
+    $('play').src = URL.createObjectURL(blob); $('play').hidden = false;
+    $('state').textContent = 'Послушай запись ниже';
+    let spoke = false;
+    try {
+      const u = new SpeechSynthesisUtterance('Привет! Я тебя слышу.');
+      u.lang = 'ru-RU';
+      u.onstart = () => { spoke = true; log(true, 'Голос ответа работает'); };
+      speechSynthesis.speak(u);
+      setTimeout(() => { if (!spoke) log(false, 'Голос ответа не прозвучал'); orb.disabled = false; }, 2500);
+    } catch (e) { log(false, 'Голос ответа не работает', e.message); orb.disabled = false; }
+  };
+  rec.start();
+  let left = 5;
+  $('state').textContent = 'Говори… ' + left;
+  const timer = setInterval(() => {
+    left -= 1;
+    if (left <= 0) { clearInterval(timer); rec.stop(); }
+    else $('state').textContent = 'Говори… ' + left;
+  }, 1000);
+};
+</script>
+</body>
+</html>
