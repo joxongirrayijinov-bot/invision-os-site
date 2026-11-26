@@ -459,9 +459,10 @@ function renderBoard(){
   Array.prototype.forEach.call(bd.querySelectorAll('.list'),function(l){keepY[l.getAttribute('data-col')]=l.scrollTop;});
   var v=shown(), h='';
   bd.classList.toggle('lst',L);
-  var byImpPos=function(a,b){return(!!b.imp-!!a.imp)||((a.pos||0)-(b.pos||0));};
+  var fo=Object.keys(D.folders), fr=function(c){return TAB==='all'?fo.indexOf(c.folder):0;};  // во «Все»: INVISION, потом Блог, потом Личное (26.11.2026)
+  var byImpPos=function(a,b){return(fr(a)-fr(b))||(!!b.imp-!!a.imp)||((a.pos||0)-(b.pos||0));};
   if(L){ // список: одна колонка, как Заметки (24.11.2026): важные, затем «в процессе», затем остальные; «Готово» внизу
-    var rank=function(c){return(c.imp?0:2)+(c.col==='doing'?0:1);};
+    var rank=function(c){return fr(c)*10+(c.imp?0:2)+(c.col==='doing'?0:1);};
     var open=v.filter(function(c){return c.col!=='done';}).sort(function(a,b){return(rank(a)-rank(b))||((a.pos||0)-(b.pos||0));});
     var dn=v.filter(function(c){return c.col==='done';}).sort(function(a,b){return(b.done_at||'')<(a.done_at||'')?-1:1;});
     h+='<section class="col one"><div class="list" data-col="todo" data-grp="1">'+cardsHtml(open)+'</div></section>';
